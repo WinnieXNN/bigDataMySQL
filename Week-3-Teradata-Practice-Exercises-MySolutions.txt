@@ -1,0 +1,124 @@
+##Exercise 1A
+
+SELECT COUNT(DISTINCT sku)
+FROM skuinfo;
+
+SELECT COUNT(DISTINCT sku)
+FROM skstinfo;
+
+SELECT COUNT(DISTINCT sku)
+FROM trnsact;
+
+
+##Exercise 1B
+
+SELECT sku, store, COUNT(*)
+FROM skstinfo
+GROUP BY sku, store;
+
+SELECT sku, store, COUNT(*)
+FROM trnsact
+GROUP BY sku, store;
+
+
+##Exercise 2
+
+SELECT COUNT(DISTINCT store)
+FROM strinfo;
+
+SELECT COUNT(DISTINCT store)
+FROM store_msa;
+
+SELECT COUNT(DISTINCT store)
+FROM skstinfo;
+
+SELECT COUNT(DISTINCT store)
+FROM trnsact;
+
+SELECT a.store
+FROM strinfo a INNER JOIN skstinfo b ON a.store = b.store
+INNER JOIN store_msa c ON b.store = c.store
+INNER JOIN trnsact d ON c.store = d.store;
+
+SELECT COUNT(DISTINCT a.store)
+FROM strinfo a LEFT JOIN skstinfo b ON a.store = b.store
+WHERE b.store IS NULL;
+
+SELECT COUNT(DISTINCT a.store)
+FROM skstinfo a LEFT JOIN store_msa b ON a.store = b.store
+WHERE b.store IS NULL;
+
+
+##Exercise 3
+
+SELECT *
+FROM trnsact LEFT JOIN skstinfo ON trnsact.sku = skstinfo.sku
+WHERE skstinfo.sku IS NULL;
+
+
+##Exercise 4
+
+SELECT SUM(t.amt - s.cost)/COUNT(DISTINCT t.saledate) AS AvgProfit
+FROM trnsact t JOIN skstinfo s ON t.sku = s.sku AND t.store = s.store
+WHERE t.stype = 'P' AND s.cost IS NOT NULL;
+
+
+##Exercise 5
+
+SELECT t.saledate, SUM(s.cost) AS TotalRetValue, SUM(t.quantity) AS TotalRetGoods
+FROM trnsact t JOIN skstinfo s ON t.sku = s.sku AND t.store = s.store
+WHERE t.stype = 'R'
+GROUP BY t.saledate
+ORDER BY TotalRetValue DESC;
+
+SELECT t.saledate, SUM(s.cost) AS TotalRetValue, SUM(t.quantity) AS TotalRetGoods
+FROM trnsact t JOIN skstinfo s ON t.sku = s.sku AND t.store = s.store
+WHERE t.stype = 'R'
+GROUP BY t.saledate
+ORDER BY TotalRetGoods DESC;
+
+
+##Exercise 6
+
+SELECT MAX(sprice) AS MaxPrice
+FROM trnsact;
+
+SELECT MIN(sprice) AS MinPrice
+FROM trnsact; 
+
+
+##Exercise 7
+
+SELECT dept, deptdesc
+FROM deptinfo
+WHERE dept IN (
+SELECT DISTINCT d.dept
+FROM deptinfo d JOIN skuinfo s ON d.dept = s.dept
+GROUP BY d.dept
+HAVING COUNT(DISTINCT s.brand) > 100);
+
+
+##Exercise 8
+
+SELECT skst.sku, d.deptdesc
+FROM skstinfo skst JOIN skuinfo sk ON skst.sku = sk.sku
+JOIN deptinfo d ON sk.dept = d.dept;
+
+
+##Exercise 9
+
+SELECT d.dept, d.deptdesc, sk.brand, sk.style, sk.color, SUM(t.amt) AS TotalValReturns
+FROM deptinfo d JOIN skuinfo sk ON d.dept = sk.dept JOIN trnsact t ON sk.sku = t.sku
+WHERE t.stype = 'R'
+GROUP BY d.dept, d.deptdesc, sk.brand, sk.style, sk.color
+ORDER BY TotalValReturns DESC;
+
+
+##Exercise 10
+
+SELECT s.state, s.zip, SUM(t.amt) AS Revenue
+FROM trnsact t JOIN strinfo s ON t.store = s.store
+WHERE t.stype = 'P'
+GROUP BY s.state, s.zip
+ORDER BY Revenue DESC;
+
